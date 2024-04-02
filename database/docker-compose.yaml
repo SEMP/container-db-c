@@ -1,0 +1,45 @@
+version: '3.9'
+services:
+  test-postgres:
+    image: postgres:16.1
+    container_name: test-postgres
+    restart: "unless-stopped"
+    environment:
+      - POSTGRES_DB=${DATABASE_NAME}
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+    volumes:
+      - test-postgres-data:/var/lib/postgresql/data
+      - /etc/localtime:/etc/localtime:ro
+      - ${POSTGRES_INIT_FILE}:/docker-entrypoint-initdb.d/init.sql
+    expose:
+      - 5432
+    networks:
+      - test-network
+
+  test-pgadmin:
+    image: dpage/pgadmin4:8.0
+    container_name: test-pgadmin
+    restart: "unless-stopped"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL
+      - PGADMIN_DEFAULT_PASSWORD
+    volumes:
+      - test-pgadmin-data:/var/lib/pgadmin:rw
+      - /etc/localtime:/etc/localtime:ro
+    expose:
+      - 80
+    ports:
+      - "${PGADMIN_PORT}:80"
+    networks:
+      - test-network
+
+volumes:
+  test-postgres-data:
+    name: test-postgres-data
+  test-pgadmin-data:
+    name: test-pgadmin-data
+
+networks:
+  test-network:
+    name: test-network
